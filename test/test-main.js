@@ -8,7 +8,7 @@ describe("chrome-api-definitions", function () {
   describe(".getDefinitions()", function () {
     it("returns stable definitions by default", function () {
       var defs = API.getDefinitions();
-      expect(defs.length).to.be.equal(50);
+      expect(defs.length).to.be.equal(51);
     });
     it("includes metadata from manifests", function () {
       var defs = API.getDefinitions();
@@ -20,8 +20,7 @@ describe("chrome-api-definitions", function () {
     });
     it("returns definition via preset from api-names.json", function () {
       var defs = API.getDefinitions({ filter: "experimental" });
-      expect(defs.length).to.be.equal(2);
-      expect(_.findWhere(defs, { namespace: "experimental.devtools.console" })).to.be.ok;
+      expect(defs.length).to.be.equal(1);
     });
   });
 

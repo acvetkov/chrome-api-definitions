@@ -1,4 +1,6 @@
 {
   "experimental.devtools.console": "devtools/experimental_console",
-  "experimental.devtools.audits": "devtools/experimental_audits"
+  "experimental.devtools.audits": "devtools/experimental_audits",
+  "instanceID": "instance_id",
+  "printerProvider": "printer_provider"
 }

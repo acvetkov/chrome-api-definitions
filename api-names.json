@@ -24,6 +24,7 @@
     "i18n",
     "identity",
     "idle",
+    "instanceID",
     "management",
     "notifications",
     "omnibox",
@@ -31,6 +32,7 @@
     "pageCapture",
     "permissions",
     "power",
+    "printerProvider",
     "privacy",
     "proxy",
     "runtime",
@@ -45,35 +47,88 @@
     "tts",
     "ttsEngine",
     "types",
-    "wallpaper",
     "webNavigation",
     "webRequest",
     "webstore",
     "windows"
   ],
   "beta": [
-    "declarativeWebRequest",
-    "networking.config",
-    "vpnProvider"
+    "declarativeWebRequest"
   ],
   "dev": [
     "automation",
-    "documentScan",
-    "location",
-    "platformKeys",
-    "printerProvider",
     "processes",
     "signedInDevices"
   ],
   "experimental": [
-    "experimental.devtools.audits",
-    "experimental.devtools.console"
+    "experimental.devtools.audits"
   ],
   "stable_chromeos": [
     "accessibilityFeatures",
+    "certificateProvider",
+    "documentScan",
+    "enterprise.deviceAttributes",
     "enterprise.platformKeys",
     "fileBrowserHandler",
     "fileSystemProvider",
-    "input.ime"
-  ]
+    "input.ime",
+    "networking.config",
+    "platformKeys",
+    "vpnProvider",
+    "wallpaper"
+  ],
+  "stable_apps": [
+    "alarms",
+    "app.runtime",
+    "app.window",
+    "bluetooth",
+    "bluetoothSocket",
+    "browser",
+    "commands",
+    "contextMenus",
+    "events",
+    "extensionTypes",
+    "fileSystem",
+    "gcm",
+    "hid",
+    "i18n",
+    "identity",
+    "idle",
+    "instanceID",
+    "mdns",
+    "mediaGalleries",
+    "notifications",
+    "permissions",
+    "power",
+    "printerProvider",
+    "runtime",
+    "serial",
+    "socket",
+    "sockets.tcp",
+    "sockets.tcpServer",
+    "sockets.udp",
+    "storage",
+    "syncFileSystem",
+    "system.cpu",
+    "system.display",
+    "system.memory",
+    "system.network",
+    "system.storage",
+    "tts",
+    "types",
+    "usb"
+  ],
+  "beta_apps": [
+    "audio",
+    "clipboard"
+  ],
+  "stable_chromeos_apps": [
+    "accessibilityFeatures",
+    "bluetoothLowEnergy",
+    "documentScan",
+    "fileSystemProvider",
+    "vpnProvider",
+    "wallpaper"
+  ],
+  "experimental_apps": []
 }

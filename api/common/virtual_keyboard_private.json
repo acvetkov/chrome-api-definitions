@@ -35,11 +35,27 @@
         "description": "The value of the virtual keyboard mode to set to."
       },
       {
+        "id": "KeyboardState",
+        "type": "string",
+        "enum": [ "ENABLED", "DISABLED", "AUTO"],
+        "description": "The value of the virtual keyboard state to change to."
+      },
+      {
         "id": "OnTextInputBoxFocusedType",
         "type": "string",
         "description": "The value of type attribute of the focused text input box.",
         "enum": ["text", "number", "password", "date", "url", "tel", "email"]
-       }
+      },
+      {
+        "id": "Bounds",
+        "type": "object",
+        "properties": {
+          "left": {"type": "integer", "description": "The position of the virtual keyboard window's left edge."},
+          "top": {"type": "integer", "description": "The position of the virtual keyboard window's top edge."},
+          "width": {"type": "integer", "description": "The width of the virtual keyboard window."},
+          "height": {"type": "integer", "description": "The height of the virtual keyboard window."}
+        }
+      }
     ],
     "functions": [
       {
@@ -55,27 +71,6 @@
             "name": "callback",
             "optional": true,
             "description": "Called when the insertion is completed.",
-            "parameters": []
-          }
-        ]
-      },
-      {
-        "name": "moveCursor",
-        "type": "function",
-        "description": "Move cursor on the current focused textfield by swipe.",
-        "parameters": [
-          { "name": "swipe_direction",
-            "type": "integer",
-            "discription": "The direction of the cursor movement."
-          },
-          { "name": "modifier_flags",
-            "type": "integer",
-            "description": "Bitmask representing the state of the system modifier keys."
-          },
-          { "type": "function",
-            "name": "callback",
-            "optional": true,
-            "decription": "called when the swipe movement is completed.",
             "parameters": []
           }
         ]
@@ -107,6 +102,17 @@
             "optional": true,
             "description": "Called when the keyboard is hidden.",
             "parameters": []
+          }
+        ]
+      },
+      {
+        "name": "setHotrodKeyboard",
+        "type": "function",
+        "description": "Sets the state of the hotrod virtual keyboard. This API should only be used by hotrod.",
+        "parameters": [
+          {
+            "type": "boolean",
+            "name": "enable"
           }
         ]
       },
@@ -154,13 +160,13 @@
                     "minLength": 1,
                     "description": "Virtual keyboard layout string."
                   },
+                  "hotrodmode": {
+                    "type": "boolean",
+                    "description": "Virtual keyboard is in hotrod mode."
+                  },
                   "a11ymode": {
                     "type": "boolean",
                     "description": "True if accessibility virtual keyboard is enabled."
-                  },
-                  "experimental": {
-                    "type": "boolean",
-                    "description": "True if experimental features are enabled."
                   },
                   "features": {
                     "type": "array",
@@ -191,6 +197,18 @@
             "description": "The value of the virtual keyboard mode to set to."
           }
         ]
+      },
+      {
+        "name": "setKeyboardState",
+        "type": "function",
+        "description": "Requests the virtual keyboard to change state.",
+        "parameters": [
+          {
+            "$ref": "KeyboardState",
+            "name": "state",
+            "description": "The value of the virtual keyboard state to change to."
+          }
+        ]
       }
 
     ],
@@ -212,6 +230,23 @@
             }
           }
         ]
+      },
+      {
+        "name": "onBoundsChanged",
+        "type": "function",
+        "description": "This event is sent when virtual keyboard bounds changed and overscroll/resize is enabled.",
+        "parameters": [
+          {
+            "name": "bounds",
+            "description": "The virtual keyboard bounds",
+            "$ref": "Bounds"
+          }
+        ]
+      },
+      {
+        "name": "onKeyboardClosed",
+        "type": "function",
+        "description": "Fired when the virtual keyboard window has been closed. For example, this can happen when turning off on-screen keyboard or exiting tablet mode."
       }
     ]
   }

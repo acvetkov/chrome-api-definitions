@@ -4,6 +4,10 @@
 
 #include "chrome/common/extensions/api/file_browser_handlers/file_browser_handler.h"
 
+#include <stddef.h>
+
+#include <memory>
+
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -132,14 +136,13 @@ FileBrowserHandlerParser::FileBrowserHandlerParser() {
 FileBrowserHandlerParser::~FileBrowserHandlerParser() {
 }
 
-#if defined(OS_CHROMEOS)
 namespace {
 
 FileBrowserHandler* LoadFileBrowserHandler(
     const std::string& extension_id,
     const base::DictionaryValue* file_browser_handler,
     base::string16* error) {
-  scoped_ptr<FileBrowserHandler> result(new FileBrowserHandler());
+  std::unique_ptr<FileBrowserHandler> result(new FileBrowserHandler());
   result->set_extension_id(extension_id);
 
   std::string handler_id;
@@ -200,10 +203,9 @@ FileBrowserHandler* LoadFileBrowserHandler(
             errors::kInvalidFileFilterValue, base::IntToString(i));
         return NULL;
       }
-      base::StringToLowerASCII(&filter);
-      if (!StartsWithASCII(filter,
-                           std::string(url::kFileSystemScheme) + ':',
-                           true)) {
+      filter = base::ToLowerASCII(filter);
+      if (!base::StartsWith(filter, std::string(url::kFileSystemScheme) + ':',
+                            base::CompareCase::SENSITIVE)) {
         *error = extensions::ErrorUtils::FormatErrorMessageUTF16(
             errors::kInvalidURLPatternError, filter);
         return NULL;
@@ -251,17 +253,14 @@ bool LoadFileBrowserHandlers(
     const base::ListValue* extension_actions,
     FileBrowserHandler::List* result,
     base::string16* error) {
-  for (base::ListValue::const_iterator iter = extension_actions->begin();
-       iter != extension_actions->end();
-       ++iter) {
-    if (!(*iter)->IsType(base::Value::TYPE_DICTIONARY)) {
+  for (const auto& entry : *extension_actions) {
+    base::DictionaryValue* dict;
+    if (!entry->GetAsDictionary(&dict)) {
       *error = base::ASCIIToUTF16(errors::kInvalidFileBrowserHandler);
       return false;
     }
-    scoped_ptr<FileBrowserHandler> action(
-        LoadFileBrowserHandler(
-            extension_id,
-            reinterpret_cast<base::DictionaryValue*>(*iter), error));
+    std::unique_ptr<FileBrowserHandler> action(
+        LoadFileBrowserHandler(extension_id, dict, error));
     if (!action.get())
       return false;  // Failed to parse file browser action definition.
     result->push_back(linked_ptr<FileBrowserHandler>(action.release()));
@@ -270,13 +269,9 @@ bool LoadFileBrowserHandlers(
 }
 
 }  // namespace
-#endif
 
 bool FileBrowserHandlerParser::Parse(extensions::Extension* extension,
                                      base::string16* error) {
-#if !defined(OS_CHROMEOS)
-  return true;
-#else
   const base::Value* file_browser_handlers_value = nullptr;
   if (!extension->manifest()->Get(keys::kFileBrowserHandlers,
                                   &file_browser_handlers_value)) {
@@ -297,7 +292,7 @@ bool FileBrowserHandlerParser::Parse(extensions::Extension* extension,
     return false;
   }
 
-  scoped_ptr<FileBrowserHandlerInfo> info(new FileBrowserHandlerInfo);
+  std::unique_ptr<FileBrowserHandlerInfo> info(new FileBrowserHandlerInfo);
   if (!LoadFileBrowserHandlers(extension->id(),
                                file_browser_handlers_list_value,
                                &info->file_browser_handlers, error)) {
@@ -306,7 +301,6 @@ bool FileBrowserHandlerParser::Parse(extensions::Extension* extension,
 
   extension->SetManifestData(keys::kFileBrowserHandlers, info.release());
   return true;
-#endif
 }
 
 const std::vector<std::string> FileBrowserHandlerParser::Keys() const {

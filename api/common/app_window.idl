@@ -43,60 +43,6 @@ namespace app.window {
     long? maxHeight;
   };
 
-  dictionary Bounds {
-    // This property can be used to read or write the current X coordinate of
-    // the content or window.
-    long left;
-
-    // This property can be used to read or write the current Y coordinate of
-    // the content or window.
-    long top;
-
-    // This property can be used to read or write the current width of the
-    // content or window.
-    long width;
-
-    // This property can be used to read or write the current height of the
-    // content or window.
-    long height;
-
-    // This property can be used to read or write the current minimum width of
-    // the content or window. A value of <code>null</code> indicates
-    // 'unspecified'.
-    long? minWidth;
-
-    // This property can be used to read or write the current minimum height of
-    // the content or window. A value of <code>null</code> indicates
-    // 'unspecified'.
-    long? minHeight;
-
-    // This property can be used to read or write the current maximum width of
-    // the content or window. A value of <code>null</code> indicates
-    // 'unspecified'.
-    long? maxWidth;
-
-    // This property can be used to read or write the current maximum height of
-    // the content or window. A value of <code>null</code> indicates
-    // 'unspecified'.
-    long? maxHeight;
-
-    // Set the left and top position of the content or window.
-    static void setPosition(long left, long top);
-
-    // Set the width and height of the content or window.
-    static void setSize(long width, long height);
-
-    // Set the minimum size constraints of the content or window. The minimum
-    // width or height can be set to <code>null</code> to remove the constraint.
-    // A value of <code>undefined</code> will leave a constraint unchanged.
-    static void setMinimumSize(long minWidth, long minHeight);
-
-    // Set the maximum size constraints of the content or window. The maximum
-    // width or height can be set to <code>null</code> to remove the constraint.
-    // A value of <code>undefined</code> will leave a constraint unchanged.
-    static void setMaximumSize(long maxWidth, long maxHeight);
-  };
-
   dictionary FrameOptions {
     // Frame type: <code>none</code> or <code>chrome</code> (defaults to
     // <code>chrome</code>).
@@ -135,9 +81,13 @@ namespace app.window {
   // State of a window: normal, fullscreen, maximized, minimized.
   enum State { normal, fullscreen, maximized, minimized };
 
-  // 'shell' is the default window type. 'panel' is managed by the OS
-  // (Currently experimental, Ash only).
-  [nodoc] enum WindowType { shell, panel };
+  // Specifies the type of window to create.
+  enum WindowType {
+    // Default window type.
+    shell,
+    // OS managed window (Chrome OS only).
+    panel
+  };
 
   [noinline_doc] dictionary CreateWindowOptions {
     // Id to identify the window. This will be used to remember the size
@@ -213,13 +163,23 @@ namespace app.window {
     [deprecated="Use innerBounds or outerBounds."] long? maxHeight;
 
     // Type of window to create.
-    [nodoc] WindowType? type;
+    WindowType? type;
 
     // Creates a special ime window. This window is not focusable and can be
     // stacked above virtual keyboard window. This is restriced to component ime
     // extensions.
     // Requires the <code>app.window.ime</code> API permission.
     [nodoc] boolean? ime;
+
+    // If true, the window will have its own shelf icon. Otherwise the window
+    // will be grouped in the shelf with other windows that are associated with
+    // the app. Defaults to false. If showInShelf is set to true you need to
+    // specify an id for the window.
+    boolean? showInShelf;
+
+    // URL of the window icon. A window can have its own icon when showInShelf
+    // is set to true. The URL should be a global or an extension local URL.
+    DOMString? icon;
 
     // Frame type: <code>none</code> or <code>chrome</code> (defaults to
     // <code>chrome</code>). For <code>none</code>, the
@@ -271,7 +231,8 @@ namespace app.window {
     // If true, the window will be focused when created. Defaults to true.
     boolean? focused;
 
-    // If true, the window will be visible on all workspaces.
+    // If true, and supported by the platform, the window will be visible on all
+    // workspaces.
     boolean? visibleOnAllWorkspaces;
   };
 
@@ -288,132 +249,6 @@ namespace app.window {
   callback CreateWindowCallback =
       void ([instanceOf=AppWindow] object createdWindow);
 
-  [noinline_doc] dictionary AppWindow {
-    // Focus the window.
-    static void focus();
-
-    // Fullscreens the window.
-    //
-    // The user will be able to restore the window by pressing ESC. An
-    // application can prevent the fullscreen state to be left when ESC is
-    // pressed by requesting the <code>app.window.fullscreen.overrideEsc</code>
-    // permission and canceling the event by calling .preventDefault(), in the
-    // keydown and keyup handlers, like this:
-    //
-    // <code>window.onkeydown = window.onkeyup = function(e) { if (e.keyCode ==
-    // 27 /* ESC */) { e.preventDefault(); } };</code>
-    //
-    // Note <code>window.fullscreen()</code> will cause the entire window to
-    // become fullscreen and does not require a user gesture. The HTML5
-    // fullscreen API can also be used to enter fullscreen mode (see
-    // <a href="http://developer.chrome.com/apps/api_other.html">Web APIs</a>
-    // for more details).
-    static void fullscreen();
-
-    // Is the window fullscreen? This will be true if the window has been
-    // created fullscreen or was made fullscreen via the
-    // <code>AppWindow</code> or HTML5 fullscreen APIs.
-    static boolean isFullscreen();
-
-    // Minimize the window.
-    static void minimize();
-
-    // Is the window minimized?
-    static boolean isMinimized();
-
-    // Maximize the window.
-    static void maximize();
-
-    // Is the window maximized?
-    static boolean isMaximized();
-
-    // Restore the window, exiting a maximized, minimized, or fullscreen state.
-    static void restore();
-
-    // Move the window to the position (|left|, |top|).
-    [deprecated="Use outerBounds."] static void moveTo(long left, long top);
-
-    // Resize the window to |width|x|height| pixels in size.
-    [deprecated="Use outerBounds."] static void resizeTo(long width, long height);
-
-    // Draw attention to the window.
-    static void drawAttention();
-
-    // Clear attention to the window.
-    static void clearAttention();
-
-    // Close the window.
-    static void close();
-
-    // Show the window. Does nothing if the window is already visible.
-    // Focus the window if |focused| is set to true or omitted.
-    static void show(optional boolean focused);
-
-    // Hide the window. Does nothing if the window is already hidden.
-    static void hide();
-
-    // Get the window's inner bounds as a $(ref:ContentBounds) object.
-    [nocompile, deprecated="Use innerBounds or outerBounds."] static ContentBounds getBounds();
-
-    // Set the window's inner bounds.
-    [nocompile, deprecated="Use innerBounds or outerBounds."] static void setBounds(ContentBounds bounds);
-
-    // Set the app icon for the window (experimental).
-    // Currently this is only being implemented on Ash.
-    // TODO(stevenjb): Investigate implementing this on Windows and OSX.
-    [nodoc] static void setIcon(DOMString iconUrl);
-
-    // Set a badge icon for the window.
-    // TODO(benwells): Document this properly before going to stable.
-    [nodoc] static void setBadgeIcon(DOMString iconUrl);
-
-    // Clear the current for the window.
-    // TODO(benwells): Document this properly before going to stable.
-    [nodoc] static void clearBadge();
-
-    // Is the window always on top?
-    static boolean isAlwaysOnTop();
-
-    // Accessors for testing.
-    [nodoc] boolean hasFrameColor;
-    [nodoc] long activeFrameColor;
-    [nodoc] long inactiveFrameColor;
-    [nodoc] boolean? firstShowHasHappened;
-
-    // Set whether the window should stay above most other windows. Requires the
-    // <code>alwaysOnTopWindows</code> permission.
-    static void setAlwaysOnTop(boolean alwaysOnTop);
-
-    // Can the window use alpha transparency?
-    // TODO(jackhou): Document this properly before going to stable.
-    [nodoc] static boolean alphaEnabled();
-
-    // For platforms that support multiple workspaces, is this window visible on
-    // all of them?
-    static void setVisibleOnAllWorkspaces(boolean alwaysVisible);
-
-    // Set whether the window should get all keyboard events including system
-    // keys that are usually not sent. This is best-effort subject to platform
-    // specific constraints. Requires the <code>"app.window.allKeys"</code>
-    // permission. This is currently available only in dev channel on Windows.
-    static void setInterceptAllKeys(boolean wantAllKeys);
-
-    // The JavaScript 'window' object for the created child.
-    [instanceOf=Window] object contentWindow;
-
-    // The id the window was created with.
-    DOMString id;
-
-    // The position, size and constraints of the window's content, which does
-    // not include window decorations.
-    // This property is new in Chrome 36.
-    Bounds innerBounds;
-
-    // The position, size and constraints of the window, which includes window
-    // decorations, such as the title bar and frame.
-    // This property is new in Chrome 36.
-    Bounds outerBounds;
-  };
 
   interface Functions {
     // The size and position of a window can be specified in a number of
@@ -456,8 +291,8 @@ namespace app.window {
     // exists null is returned. This method is new in Chrome 33.
     [nocompile] static AppWindow get(DOMString id);
 
-    // Does the current platform support windows being visible on all
-    // workspaces?
+    // Whether the current platform supports windows being visible on all
+    // workspaces.
     [nocompile] static boolean canSetVisibleOnAllWorkspaces();
   };
 

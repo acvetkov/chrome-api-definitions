@@ -31,7 +31,7 @@ class SocketsManifestPermission : public ManifestPermission {
 
   // Tries to construct the info based on |value|, as it would have appeared in
   // the manifest. Sets |error| and returns an empty scoped_ptr on failure.
-  static scoped_ptr<SocketsManifestPermission> FromValue(
+  static std::unique_ptr<SocketsManifestPermission> FromValue(
       const base::Value& value,
       base::string16* error);
 
@@ -44,10 +44,8 @@ class SocketsManifestPermission : public ManifestPermission {
   std::string name() const override;
   std::string id() const override;
   PermissionIDSet GetPermissions() const override;
-  bool HasMessages() const override;
-  PermissionMessages GetMessages() const override;
   bool FromValue(const base::Value* value) override;
-  scoped_ptr<base::Value> ToValue() const override;
+  std::unique_ptr<base::Value> ToValue() const override;
   ManifestPermission* Diff(const ManifestPermission* rhs) const override;
   ManifestPermission* Union(const ManifestPermission* rhs) const override;
   ManifestPermission* Intersect(const ManifestPermission* rhs) const override;
@@ -57,8 +55,7 @@ class SocketsManifestPermission : public ManifestPermission {
   // Adds the permissions from |sockets| into the permission lists |ids| and
   // |messages|. If either is NULL, that list is ignored.
   static void AddSocketHostPermissions(const SocketPermissionEntrySet& sockets,
-                                       PermissionIDSet* ids,
-                                       PermissionMessages* messages);
+                                       PermissionIDSet* ids);
 
   SocketPermissionEntrySet permissions_;
 };

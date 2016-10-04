@@ -29,7 +29,7 @@ class BluetoothManifestPermission : public ManifestPermission {
 
   // Tries to construct the info based on |value|, as it would have appeared in
   // the manifest. Sets |error| and returns an empty scoped_ptr on failure.
-  static scoped_ptr<BluetoothManifestPermission> FromValue(
+  static std::unique_ptr<BluetoothManifestPermission> FromValue(
       const base::Value& value,
       base::string16* error);
 
@@ -37,6 +37,7 @@ class BluetoothManifestPermission : public ManifestPermission {
                     const BluetoothPermissionRequest& request) const;
   bool CheckSocketPermitted(const Extension* extension) const;
   bool CheckLowEnergyPermitted(const Extension* extension) const;
+  bool CheckPeripheralPermitted(const Extension* extension) const;
 
   void AddPermission(const std::string& uuid);
 
@@ -44,10 +45,8 @@ class BluetoothManifestPermission : public ManifestPermission {
   std::string name() const override;
   std::string id() const override;
   PermissionIDSet GetPermissions() const override;
-  bool HasMessages() const override;
-  PermissionMessages GetMessages() const override;
   bool FromValue(const base::Value* value) override;
-  scoped_ptr<base::Value> ToValue() const override;
+  std::unique_ptr<base::Value> ToValue() const override;
   ManifestPermission* Diff(const ManifestPermission* rhs) const override;
   ManifestPermission* Union(const ManifestPermission* rhs) const override;
   ManifestPermission* Intersect(const ManifestPermission* rhs) const override;
@@ -60,6 +59,7 @@ class BluetoothManifestPermission : public ManifestPermission {
   BluetoothUuidSet uuids_;
   bool socket_;
   bool low_energy_;
+  bool peripheral_;
 };
 
 }  // namespace extensions

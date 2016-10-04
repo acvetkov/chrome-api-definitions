@@ -23,8 +23,9 @@ namespace developerPrivate {
 
     // For lazy background pages, the value is -1.
     long render_process_id;
-
+    // This actually refers to a render frame.
     long render_view_id;
+
     boolean incognito;
     boolean generatedBackgroundPage;
   };
@@ -61,13 +62,14 @@ namespace developerPrivate {
   enum ViewType {
     APP_WINDOW,
     BACKGROUND_CONTENTS,
+    COMPONENT,
     EXTENSION_BACKGROUND_PAGE,
     EXTENSION_DIALOG,
+    EXTENSION_GUEST,
     EXTENSION_POPUP,
     LAUNCHER_PAGE,
     PANEL,
-    TAB_CONTENTS,
-    VIRTUAL_KEYBOARD
+    TAB_CONTENTS
   };
 
   enum ErrorType {
@@ -84,7 +86,13 @@ namespace developerPrivate {
   enum ExtensionState {
     ENABLED,
     DISABLED,
-    TERMINATED
+    TERMINATED,
+    BLACKLISTED
+  };
+
+  enum CommandScope {
+    GLOBAL,
+    CHROME
   };
 
   dictionary AccessModifier {
@@ -105,6 +113,7 @@ namespace developerPrivate {
     boolean fromIncognito;
     DOMString source;
     DOMString message;
+    long id;
     DOMString manifestKey;
     DOMString? manifestSpecific;
   };
@@ -115,6 +124,7 @@ namespace developerPrivate {
     boolean fromIncognito;
     DOMString source;
     DOMString message;
+    long id;
     ErrorLevel severity;
     DOMString contextUrl;
     long occurrences;
@@ -143,15 +153,44 @@ namespace developerPrivate {
   dictionary ExtensionView {
     DOMString url;
     long renderProcessId;
+    // This actually refers to a render frame.
     long renderViewId;
     boolean incognito;
+    boolean isIframe;
     ViewType type;
+  };
+
+  enum ControllerType {
+    POLICY,
+    CHILD_CUSTODIAN,
+    SUPERVISED_USER_CUSTODIAN
+  };
+
+  dictionary ControlledInfo {
+    ControllerType type;
+    DOMString text;
+  };
+
+  dictionary Command {
+    DOMString description;
+    DOMString keybinding;
+    DOMString name;
+    boolean isActive;
+    CommandScope scope;
+    boolean isExtensionAction;
+  };
+
+  dictionary DependentExtension {
+    DOMString id;
+    DOMString name;
   };
 
   dictionary ExtensionInfo {
     boolean actionButtonHidden;
     DOMString? blacklistText;
-    DOMString[] dependentExtensions;
+    Command[] commands;
+    ControlledInfo? controlledInfo;
+    DependentExtension[] dependentExtensions;
     DOMString description;
     DisableReasons disableReasons;
     AccessModifier errorCollection;
@@ -160,7 +199,6 @@ namespace developerPrivate {
     DOMString iconUrl;
     DOMString id;
     AccessModifier incognitoAccess;
-    boolean installedByCustodian;
     DOMString[] installWarnings;
     DOMString? launchUrl;
     Location location;
@@ -171,7 +209,7 @@ namespace developerPrivate {
     boolean offlineEnabled;
     OptionsPage? optionsPage;
     DOMString? path;
-    DOMString? policyText;
+    DOMString[] permissions;
     DOMString? prettifiedPath;
     AccessModifier runOnAllUrls;
     RuntimeError[] runtimeErrors;
@@ -247,6 +285,13 @@ namespace developerPrivate {
     boolean? inDeveloperMode;
   };
 
+  dictionary ExtensionCommandUpdate {
+    DOMString extensionId;
+    DOMString commandName;
+    CommandScope? scope;
+    DOMString? keybinding;
+  };
+
   dictionary ReloadOptions {
     // If false, an alert dialog will show in the event of a reload error.
     // Defaults to false.
@@ -284,7 +329,10 @@ namespace developerPrivate {
     VIEW_REGISTERED,
     // window / view closed.
     VIEW_UNREGISTERED,
-    ERROR_ADDED
+    ERROR_ADDED,
+    ERRORS_REMOVED,
+    PREFS_CHANGED,
+    WARNINGS_CHANGED
   };
 
   dictionary PackDirectoryResponse {
@@ -358,7 +406,8 @@ namespace developerPrivate {
     // page (where renderViewId and renderProcessId are -1).
     DOMString? extensionId;
 
-    // The ID of the render view in which the error occurred.
+    // The ID of the render frame in which the error occurred.
+    // Despite being called renderViewId, this refers to a render frame.
     long renderViewId;
 
     // The ID of the process in which the error occurred.
@@ -512,6 +561,16 @@ namespace developerPrivate {
     // |extensionId| : The id of the extension to show the path for.
     static void showPath(DOMString extensionId, optional VoidCallback callback);
 
+    // (Un)suspends global shortcut handling.
+    // |isSuspended| : Whether or not shortcut handling should be suspended.
+    static void setShortcutHandlingSuspended(boolean isSuspended,
+                                             optional VoidCallback callback);
+
+    // Updates an extension command.
+    // |update| : The parameters for updating the extension command.
+    static void updateExtensionCommand(ExtensionCommandUpdate update,
+                                       optional VoidCallback callback);
+
     [nocompile, deprecated="Use management.setEnabled"]
         static void enable(DOMString id,
                            boolean enabled,
@@ -532,6 +591,9 @@ namespace developerPrivate {
   interface Events {
     // Fired when a item state is changed.
     static void onItemStateChanged(EventData response);
+
+    // Fired when the profile's state has changed.
+    static void onProfileStateChanged(ProfileInfo info);
   };
 
 };

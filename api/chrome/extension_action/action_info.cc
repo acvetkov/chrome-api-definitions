@@ -4,7 +4,8 @@
 
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <memory>
+
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/extensions/api/commands/commands_handler.h"
 #include "extensions/common/constants.h"
@@ -27,7 +28,7 @@ struct ActionInfoData : public Extension::ManifestData {
   ~ActionInfoData() override;
 
   // The action associated with the BrowserAction.
-  scoped_ptr<ActionInfo> action_info;
+  std::unique_ptr<ActionInfo> action_info;
 };
 
 ActionInfoData::ActionInfoData(ActionInfo* info) : action_info(info) {
@@ -45,17 +46,18 @@ static const ActionInfo* GetActionInfo(const Extension* extension,
 
 }  // namespace
 
-ActionInfo::ActionInfo() {
-}
+ActionInfo::ActionInfo() : synthesized(false) {}
+
+ActionInfo::ActionInfo(const ActionInfo& other) = default;
 
 ActionInfo::~ActionInfo() {
 }
 
 // static
-scoped_ptr<ActionInfo> ActionInfo::Load(const Extension* extension,
-                                        const base::DictionaryValue* dict,
-                                        base::string16* error) {
-  scoped_ptr<ActionInfo> result(new ActionInfo());
+std::unique_ptr<ActionInfo> ActionInfo::Load(const Extension* extension,
+                                             const base::DictionaryValue* dict,
+                                             base::string16* error) {
+  std::unique_ptr<ActionInfo> result(new ActionInfo());
 
   if (extension->manifest_version() == 1) {
     // kPageActionIcons is obsolete, and used by very few extensions. Continue
@@ -69,7 +71,7 @@ scoped_ptr<ActionInfo> ActionInfo::Load(const Extension* extension,
           !(*iter)->GetAsString(&path) ||
           !manifest_handler_helpers::NormalizeAndValidatePath(&path)) {
         *error = base::ASCIIToUTF16(errors::kInvalidPageActionIconPath);
-        return scoped_ptr<ActionInfo>();
+        return std::unique_ptr<ActionInfo>();
       }
       result->default_icon.Add(extension_misc::EXTENSION_ICON_ACTION, path);
     }
@@ -78,7 +80,7 @@ scoped_ptr<ActionInfo> ActionInfo::Load(const Extension* extension,
     if (dict->HasKey(keys::kPageActionId)) {
       if (!dict->GetString(keys::kPageActionId, &id)) {
         *error = base::ASCIIToUTF16(errors::kInvalidPageActionId);
-        return scoped_ptr<ActionInfo>();
+        return std::unique_ptr<ActionInfo>();
       }
       result->id = id;
     }
@@ -91,29 +93,21 @@ scoped_ptr<ActionInfo> ActionInfo::Load(const Extension* extension,
     const base::DictionaryValue* icons_value = NULL;
     std::string default_icon;
     if (dict->GetDictionary(keys::kPageActionDefaultIcon, &icons_value)) {
-      int icon_sizes[extension_misc::kNumExtensionActionIconSizes];
-      for (size_t i = 0u; i < extension_misc::kNumExtensionActionIconSizes; ++i)
-        icon_sizes[i] = extension_misc::kExtensionActionIconSizes[i].size;
       if (!manifest_handler_helpers::LoadIconsFromDictionary(
-              icons_value,
-              icon_sizes,
-              extension_misc::kNumExtensionActionIconSizes,
-              &result->default_icon,
-              error)) {
-        return scoped_ptr<ActionInfo>();
+              icons_value, &result->default_icon, error)) {
+        return std::unique_ptr<ActionInfo>();
       }
     } else if (dict->GetString(keys::kPageActionDefaultIcon, &default_icon) &&
                manifest_handler_helpers::NormalizeAndValidatePath(
                    &default_icon)) {
-      // Choose the most optimistic (highest) icon density - e.g. 38 not 19 -
-      // regardless of the actual icon resolution, whatever that happens to be.
-      // Code elsewhere knows how to scale 38 down to 19.
-      result->default_icon.Add(extension_misc::EXTENSION_ICON_ACTION *
-                                   extension_misc::kNumExtensionActionIconSizes,
+      // Choose the most optimistic (highest) icon density regardless of the
+      // actual icon resolution, whatever that happens to be. Code elsewhere
+      // knows how to scale down to 19.
+      result->default_icon.Add(extension_misc::EXTENSION_ICON_GIGANTOR,
                                default_icon);
     } else {
       *error = base::ASCIIToUTF16(errors::kInvalidPageActionIconPath);
-      return scoped_ptr<ActionInfo>();
+      return std::unique_ptr<ActionInfo>();
     }
   }
 
@@ -123,12 +117,12 @@ scoped_ptr<ActionInfo> ActionInfo::Load(const Extension* extension,
     if (!dict->GetString(keys::kPageActionDefaultTitle,
                          &result->default_title)) {
       *error = base::ASCIIToUTF16(errors::kInvalidPageActionDefaultTitle);
-      return scoped_ptr<ActionInfo>();
+      return std::unique_ptr<ActionInfo>();
     }
   } else if (extension->manifest_version() == 1 && dict->HasKey(keys::kName)) {
     if (!dict->GetString(keys::kName, &result->default_title)) {
       *error = base::ASCIIToUTF16(errors::kInvalidPageActionName);
-      return scoped_ptr<ActionInfo>();
+      return std::unique_ptr<ActionInfo>();
     }
   }
 
@@ -144,7 +138,7 @@ scoped_ptr<ActionInfo> ActionInfo::Load(const Extension* extension,
           errors::kInvalidPageActionOldAndNewKeys,
           keys::kPageActionDefaultPopup,
           keys::kPageActionPopup);
-      return scoped_ptr<ActionInfo>();
+      return std::unique_ptr<ActionInfo>();
     }
     popup_key = keys::kPageActionPopup;
   }
@@ -160,11 +154,11 @@ scoped_ptr<ActionInfo> ActionInfo::Load(const Extension* extension,
       if (!popup->GetString(keys::kPageActionPopupPath, &url_str)) {
         *error = ErrorUtils::FormatErrorMessageUTF16(
             errors::kInvalidPageActionPopupPath, "<missing>");
-        return scoped_ptr<ActionInfo>();
+        return std::unique_ptr<ActionInfo>();
       }
     } else {
       *error = base::ASCIIToUTF16(errors::kInvalidPageActionPopup);
-      return scoped_ptr<ActionInfo>();
+      return std::unique_ptr<ActionInfo>();
     }
 
     if (!url_str.empty()) {
@@ -174,7 +168,7 @@ scoped_ptr<ActionInfo> ActionInfo::Load(const Extension* extension,
       if (!result->default_popup_url.is_valid()) {
         *error = ErrorUtils::FormatErrorMessageUTF16(
             errors::kInvalidPageActionPopupPath, url_str);
-        return scoped_ptr<ActionInfo>();
+        return std::unique_ptr<ActionInfo>();
       }
     } else {
       DCHECK(result->default_popup_url.is_empty())
@@ -182,7 +176,7 @@ scoped_ptr<ActionInfo> ActionInfo::Load(const Extension* extension,
     }
   }
 
-  return result.Pass();
+  return result;
 }
 
 // static

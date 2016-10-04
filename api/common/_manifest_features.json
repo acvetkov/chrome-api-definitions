@@ -3,17 +3,8 @@
 // found in the LICENSE file.
 
 // This features file defines manifest keys implemented under src/extensions.
-// See extensions/common/features/* to understand this file, in particular
-// feature.h, simple_feature.h, and base_feature_provider.h.
-
-// To add a new whitelisted ID, SHA-1 it and force it to uppercase. In Bash:
-//
-// $ echo -n "aaaabbbbccccddddeeeeffffgggghhhh" | \
-// sha1sum | tr '[:lower:]' '[:upper:]'
-// 9A0417016F345C934A1A88F55CA17C05014EEEBA  -
-//
-// Google employees: please update http://go/chrome-api-whitelist to map
-// hashes back to ids.
+// See chrome/common/extensions/api/_features.md to understand this file, as
+// well as feature.h, simple_feature.h, and base_feature_provider.h.
 
 {
   "app": {
@@ -30,10 +21,13 @@
     "extension_types": ["platform_app"],
     "min_manifest_version": 2,
     "whitelist": [
-      "nckgahadagoaajjgafhacjanaoiihapd",  // Google Talk prod
-      "eggnbpckecmjlblplehfpjjdhhidfdoj",  // Google Talk beta
-      "ppleadejekpmccmnpjdimmlfljlkdfej",  // Google Talk alpha
-      "ljclpkphhpbpinifbeabbhlfddcpfdde",   // Google Talk debug
+      // Keep this list in sync with extensions_misc::kHangoutsExtensionIds but
+      // omit the Packaged App ids.
+      "nckgahadagoaajjgafhacjanaoiihapd",  // Hangouts Production.
+      "ljclpkphhpbpinifbeabbhlfddcpfdde",  // Hangouts Debug.
+      "ppleadejekpmccmnpjdimmlfljlkdfej",  // Hangouts Alpha.
+      "eggnbpckecmjlblplehfpjjdhhidfdoj",  // Hangouts Beta.
+
       "lphgohfeebnhcpiohjndkgbhhkoapkjc" // Apps Debugger
     ]
   },
@@ -90,7 +84,28 @@
     "channel": "stable",
     "extension_types": ["extension"],
     "whitelist": [
-      "950D13BB9B4794F4CA2A68D3597E5DFAA47C88AE"  // Drive
+      "950D13BB9B4794F4CA2A68D3597E5DFAA47C88AE",  // Drive
+      "0EEB39B7A9A52CAAE6A072F83320435749B184A4",  // http://crbug.com/481210
+      "D4AF239830E1E038C9B60DA365B1EC9CB3BC5658",  // http://crbug.com/481210
+      "4895B1DBB92D52488F8D9FFDF9CC7B95C7258C9A",  // http://crbug.com/505532
+      "A3880AA78DB0004DE841CC980959D8443F3A8E40",  // http://crbug.com/521615
+      "C8B53B3C2CC39CB504B19D990165684FF0CE880C"   // http://crbug.com/521615
+    ]
+  }, {
+    "channel": "beta",
+    "extension_types": ["extension"],
+    "whitelist": [
+      "4895B1DBB92D52488F8D9FFDF9CC7B95C7258C9A",  // https://crbug.com/570337
+      "A3880AA78DB0004DE841CC980959D8443F3A8E40",  // https://crbug.com/570337
+      "C8B53B3C2CC39CB504B19D990165684FF0CE880C"   // https://crbug.com/570337
+    ]
+  }, {
+    "channel": "dev",
+    "extension_types": ["extension"],
+    "whitelist": [
+      "4895B1DBB92D52488F8D9FFDF9CC7B95C7258C9A",  // https://crbug.com/570337
+      "A3880AA78DB0004DE841CC980959D8443F3A8E40",  // https://crbug.com/570337
+      "C8B53B3C2CC39CB504B19D990165684FF0CE880C"   // https://crbug.com/570337
     ]
   }, {
     "channel": "canary",
@@ -102,10 +117,6 @@
     // overriden (except for a whitelist of exceptions, see the
     // app.content_security_policy whitelist).
     "extension_types": ["extension", "legacy_packaged_app"]
-  },
-  "copresence" : {
-    "channel": "stable",
-    "extension_types": "all"
   },
   "current_locale": {
     "channel": "stable",
@@ -158,6 +169,14 @@
     "channel": "stable",
     "extension_types": "all"
   },
+  "kiosk": {
+    "channel": "stable",
+    "extension_types": ["platform_app"]
+  },
+  "kiosk.required_platform_version": {
+    "channel": "stable",
+    "extension_types": ["platform_app"]
+  },
   "kiosk_enabled": {
     "channel": "stable",
     "extension_types": [
@@ -165,7 +184,14 @@
     ]
   },
   "kiosk_only": {
-    "channel": "dev",
+    "channel": "stable",
+    "extension_types": [
+      "platform_app"
+    ],
+    "platforms": ["chromeos"]
+  },
+  "kiosk_secondary_apps": {
+    "channel": "stable",
     "extension_types": [
       "platform_app"
     ]
@@ -232,8 +258,6 @@
       "nmmhkkegccagdldgiimedpiccmgmieda",  // In-app payments support app.
       "4B1D0E19C6C43C008C44A8278C8B5BFE15ABEB3C",
       "F7FA7ABC1ECB89BA8EE6656847EFABBF43BB9BCA",
-      "1A26E32DE447A17CBE5E9750CDBA78F58539B39C",  // TODO(rockot): Kill these.
-      "E61F841D8210B6A9891E5384CB665FBED31FCD7B",  // http://crbug.com/281715
 
       "07BD6A765FFC289FF755D7CAB2893A40EC337FEC",  // http://crbug.com/430730
       "896B85CC7E913E11C34892C1425A093C0701D386",  // http://crbug.com/430730
@@ -243,7 +267,8 @@
       // TODO(joaodasilva): remove these two once we have the new policy to
       // grant auto approval by ID. http://crbug.com/399392
       "A8208CCC87F8261AFAEB6B85D5E8D47372DDEA6B",
-      "A4577D8C2AF4CF26F40CBCA83FFA4251D6F6C8F8"
+      "A4577D8C2AF4CF26F40CBCA83FFA4251D6F6C8F8",
+      "EFCF5358672FEE04789FD2EC3638A67ADEDB6C8C"  // http://crbug.com/514696
     ]
   },
   "offline_enabled": {
@@ -264,6 +289,10 @@
     "min_manifest_version": 2
   },
   "sockets": {
+    "channel": "stable",
+    "extension_types": ["platform_app"]
+  },
+  "usb_printers": {
     "channel": "stable",
     "extension_types": ["platform_app"]
   },

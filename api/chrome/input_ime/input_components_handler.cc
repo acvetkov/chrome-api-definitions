@@ -4,7 +4,10 @@
 
 #include "chrome/common/extensions/api/input_ime/input_components_handler.h"
 
-#include "base/memory/scoped_ptr.h"
+#include <stddef.h>
+
+#include <memory>
+
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -27,6 +30,9 @@ InputComponentInfo::InputComponentInfo()
       shortcut_shift(false) {
 }
 
+InputComponentInfo::InputComponentInfo(const InputComponentInfo& other) =
+    default;
+
 InputComponentInfo::~InputComponentInfo() {}
 
 InputComponents::InputComponents() {}
@@ -48,7 +54,7 @@ InputComponentsHandler::~InputComponentsHandler() {
 
 bool InputComponentsHandler::Parse(Extension* extension,
                                    base::string16* error) {
-  scoped_ptr<InputComponents> info(new InputComponents);
+  std::unique_ptr<InputComponents> info(new InputComponents);
   const base::ListValue* list_value = NULL;
   if (!extension->manifest()->GetList(keys::kInputComponents, &list_value)) {
     *error = base::ASCIIToUTF16(errors::kInvalidInputComponents);

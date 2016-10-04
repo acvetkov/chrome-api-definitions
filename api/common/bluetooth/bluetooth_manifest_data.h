@@ -22,7 +22,7 @@ namespace extensions {
 class BluetoothManifestData : public Extension::ManifestData {
  public:
   explicit BluetoothManifestData(
-      scoped_ptr<BluetoothManifestPermission> permission);
+      std::unique_ptr<BluetoothManifestPermission> permission);
   ~BluetoothManifestData() override;
 
   // Gets the BluetoothManifestData for |extension|, or NULL if none was
@@ -34,18 +34,20 @@ class BluetoothManifestData : public Extension::ManifestData {
 
   static bool CheckSocketPermitted(const Extension* extension);
   static bool CheckLowEnergyPermitted(const Extension* extension);
+  static bool CheckPeripheralPermitted(const Extension* extension);
 
   // Tries to construct the info based on |value|, as it would have appeared in
   // the manifest. Sets |error| and returns an empty scoped_ptr on failure.
-  static scoped_ptr<BluetoothManifestData> FromValue(const base::Value& value,
-                                                     base::string16* error);
+  static std::unique_ptr<BluetoothManifestData> FromValue(
+      const base::Value& value,
+      base::string16* error);
 
   const BluetoothManifestPermission* permission() const {
     return permission_.get();
   }
 
  private:
-  scoped_ptr<BluetoothManifestPermission> permission_;
+  std::unique_ptr<BluetoothManifestPermission> permission_;
 };
 
 // Used for checking bluetooth permission.

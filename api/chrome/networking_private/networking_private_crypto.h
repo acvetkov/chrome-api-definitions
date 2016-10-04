@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-#include "base/basictypes.h"
+#include "base/time/time.h"
 
 namespace networking_private_crypto {
 
@@ -26,6 +26,16 @@ bool VerifyCredentials(
     const std::string& signature,
     const std::string& data,
     const std::string& connected_mac);
+
+// The same as VerifyCredentials() above, but uses time |time| rather than the
+// current time for checking validity.
+bool VerifyCredentialsAtTime(
+    const std::string& certificate,
+    const std::vector<std::string>& intermediate_certificates,
+    const std::string& signature,
+    const std::string& data,
+    const std::string& connected_mac,
+    const base::Time& time);
 
 // Encrypt |data| with |public_key|. |public_key| is a DER-encoded
 // RSAPublicKey. |data| is some string of bytes that is smaller than the

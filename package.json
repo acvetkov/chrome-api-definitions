@@ -7,6 +7,13 @@
     "test": "./node_modules/.bin/mocha --reporter spec --ui bdd"
   },
   "author": "Jordan Santell",
+  "contributors": [
+    {
+      "name": "Aleksey Tsvetkov",
+      "email": "aleksey.dmitrich@gmail.com",
+      "url": "https://github.com/acvetkov"
+    }
+  ],
   "license": "MIT",
   "dependencies": {
     "shush": "^1.0.0",
